@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from statsmodels.tsa.arima.model import ARIMA
 
@@ -22,6 +23,10 @@ def clear_data(data: list[float]):
     df = df[z_scores < 3]
     # Восстанавливаем пропущенные значения по среднему соседних
     df.fillna(df.mean(), inplace=True)
+
+    # Проверка данных на нормальное распределение по Харке—Бера
+    jb_test = sm.stats.stattools.jarque_bera(df)
+    print("jb_test", jb_test)
     return df
 
 
@@ -40,11 +45,11 @@ def forecast(data_frame, steps: int):
 
     # Создаем DataFrame для прогноза
     forecast_result = model_fit.get_forecast(steps=steps)
-    # 3. Создаем индекс для прогноза (продолжение текущего индекса)
+    # Создаем индекс для прогноза (продолжение текущего индекса)
     last_index: int = data_frame.index[-1]  # type: ignore
     forecast_index = range(last_index + 1, last_index + steps + 1)  # 214, 215, ... 243
 
-    # 4. Формируем DataFrame прогноза
+    # Формируем DataFrame прогноза
     forecast_df = pd.DataFrame(
         {
             0: forecast_result.predicted_mean.values  # Сохраняем имя колонки как 0
@@ -64,11 +69,8 @@ start_col = 1  # начальный столбец
 steps = 6
 
 raw_data = read_data(row, start_col)
-# print(raw_data)
 df = clear_data(raw_data)
 df = forecast(df, steps)
-
-
 # gasoline
 row = 78
 start_col = 1
@@ -79,8 +81,8 @@ gasoline_df = forecast(gasoline_df, steps)
 
 # Визуализация исходных данных и прогноза и
 # сохранение в файл для отображения на странице
-plt.plot(df.index[:-steps], df[:-steps], label="Колбасы")
-plt.plot(df.index[-steps:], df[-steps:], label="Колбасы предсказание")
+plt.plot(df.index[:-steps], df[:-steps], label="Колбаса")
+plt.plot(df.index[-steps:], df[-steps:], label="Колбаса предсказание")
 plt.plot(gasoline_df.index[:-steps], gasoline_df[:-steps], label="Бензин")
 plt.plot(gasoline_df.index[-steps:], gasoline_df[-steps:], label="Бензин предсказание")
 plt.title("Статистика и прогноз на 6 месяцев")
