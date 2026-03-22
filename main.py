@@ -66,7 +66,7 @@ sheets = list(map(str, range(2022, 2027)))
 # Колбаса полукапченая, вареная
 row = 8  # строка
 start_col = 1  # начальный столбец
-steps = 6
+steps = 24 # прогноз в неделях
 
 raw_data = read_data(row, start_col)
 df = clear_data(raw_data)
